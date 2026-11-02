@@ -1,0 +1,11 @@
+{
+  "name": "KeyDepot",
+  "identifier": "dev.tbdsux.keydepot",
+  "version": "0.1.0",
+  "main": "./app",
+  "out": "build",
+  "updates": {
+    "publicKey": "c921TFPUeSdAKvrbcXfia9FO4kMuTpiASXQI/TmkerQ=",
+    "github": "tbdsux/keydepot"
+  }
+}
