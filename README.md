@@ -4,6 +4,8 @@
 
 A desktop app that keeps your private keys encrypted, on your own computer. Store SSH, PGP and other private keys in one vault, group them by project, and copy one when you need it.
 
+![KeyDepot's main window, showing the key list and a key's details](docs/image.png)
+
 > **Beta.** KeyDepot hasn't had an independent security review. Keep another backup of any key you can't afford to lose.
 
 ## Features
