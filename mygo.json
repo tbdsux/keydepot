@@ -1,7 +1,7 @@
 {
   "name": "KeyDepot",
   "identifier": "dev.tbdsux.keydepot",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "main": "./app",
   "out": "build",
   "updates": {

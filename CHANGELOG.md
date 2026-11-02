@@ -2,9 +2,9 @@
 
 Each release needs a `## <version>` section matching `version` in `mygo.json`, or its build fails. The section becomes the release's description and what the update window shows.
 
-## 0.1.0
+## 0.1.0-beta.1
 
-First release.
+First beta release.
 
 - Keep private keys in an encrypted vault, grouped by project
 - Protect them with a KeyDepot password and recovery code, or on macOS with Touch ID or your Mac password
