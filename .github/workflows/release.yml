@@ -8,7 +8,7 @@ permissions:
   contents: write # the draft release, and the uploads to it
 
 jobs:
-  release:
+  draft-release:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -25,10 +25,42 @@ jobs:
           CGO_ENABLED: "0"
       - name: Vet
         run: go tool mygo vet .
-      # Uploads to a draft release, which you publish after looking at it.
-      # shortcut: macOS apps are signed ad hoc, add docs/github-actions.md's signing steps once there is a Developer ID.
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+              --draft --verify-tag --title "$GITHUB_REF_NAME" --generate-notes
+          fi
+
+  build:
+    needs: draft-release
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      # Each upload merges into the release's SHA256SUMS, which uploads at the same time could overwrite.
+      max-parallel: 1
+      matrix:
+        include:
+          - { name: macOS, os: macos-latest, platform: "darwin/arm64,darwin/amd64" }
+          - { name: Windows, os: ubuntu-latest, platform: "windows/amd64,windows/arm64" }
+          - { name: Linux, os: ubuntu-latest, platform: "linux/amd64,linux/arm64" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+      - name: Install NSIS, for the Windows installers
+        if: matrix.name == 'Windows'
+        run: sudo apt-get update && sudo apt-get install -y nsis
+      # Uploads to the draft release, which you publish after looking at it.
+      # shortcut: macOS and Windows builds are unsigned, add docs/github-actions.md's signing steps once there are certificates.
       - name: Build and upload
-        run: go tool mygo build -platform darwin/arm64,darwin/amd64 -upload
+        run: go tool mygo build -platform "${{ matrix.platform }}" -upload
         env:
           GH_TOKEN: ${{ github.token }}
           MYGO_UPDATER_PRIVATE_KEY: ${{ secrets.MYGO_UPDATER_PRIVATE_KEY }}
