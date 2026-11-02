@@ -16,7 +16,7 @@ Dependencies point one way: `app` → `ui` → `lib`.
 | `lib/vault` | The encrypted file and protection modes |
 | `lib/crypt` | AES-GCM and Argon2id |
 | `lib/export` | `.keydepot` export files |
-| `lib/auth` | The macOS system prompt, called through `purego` |
+| `lib/auth` | The macOS system prompt, called through `purego`; other systems don't offer it |
 | `lib/durable` | Crash-safe file writes |
 | `lib/shortcut`, `lib/paths` | Saved shortcuts, and where files live |
 
@@ -32,7 +32,7 @@ Dependencies point one way: `app` → `ui` → `lib`.
 The app then shows one of three screens:
 
 - the load error, if a file couldn't be read
-- the protection picker, if there's no vault yet
+- the protection picker, if there's no vault yet, which leaves out the system prompt where it isn't available
 - the main window
 
 ## Store and vault
@@ -75,4 +75,4 @@ Slow work, such as Argon2id and system prompts, goes through `App.run`, which do
 
 `CGO_ENABLED=0 go test ./...` covers `lib/crypt`, `lib/export`, `lib/shortcut`, `lib/store`, `lib/vault`, `ui/update` and `ui/view`. The view tests drive the UI with MyGo's `ui.NewTester`.
 
-`lib/durable` and `lib/auth` have no tests of their own, and the system prompt and Keychain need checking by hand on a real Mac.
+CI runs them on macOS, Windows and Linux. `lib/durable` and `lib/auth` have no tests of their own, and the system prompt and each system's secret store need checking by hand on a real computer.

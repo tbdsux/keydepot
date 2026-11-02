@@ -29,7 +29,7 @@ Private key ── AES-256-GCM ── data key
 | Someone walks up to your unlocked Mac while KeyDepot is locked | Protected | Protected by the prompt | **Not protected** |
 | Malware running as you | **Not protected** once you unlock | **Not protected** | **Not protected** |
 
-The Touch ID prompt is a gate in the app, not encryption. The data key sits in your login Keychain, and the prompt decides whether KeyDepot uses it. Password mode is the only one where opening the vault needs something that isn't stored on your computer.
+The Touch ID or Mac password mode is only on macOS. Its prompt is a gate in the app, not encryption. The data key sits in your login Keychain, and the prompt decides whether KeyDepot uses it. Password mode is the only one where opening the vault needs something that isn't stored on your computer.
 
 Editing the vault file can't lower the protection. A password-wrapped key in the file always means password mode, and in the other modes the Keychain item decides the mode, not the file. A vault with keys and no Keychain item shows an error rather than opening.
 
@@ -40,7 +40,8 @@ Editing the vault file can't lower the protection. A password-wrapped key in the
 - **Clipboard:** other apps can read a copied key during the 60 seconds, clipboard history tools may keep it, and it isn't cleared if KeyDepot quits first.
 - **Tampering by removal:** each item is authenticated on its own, but the vault as a whole isn't. Someone who can write to the file can delete items or restore an older copy without KeyDepot noticing. They still can't read or forge keys.
 - **Password strength:** the minimum is 8 characters, or 12 for exports. Argon2id slows guessing but can't save a weak password.
-- **Other apps and the Keychain:** other apps you run may be able to ask for KeyDepot's Keychain item, and macOS decides whether to prompt you.
+- **Other apps and the secret store:** other apps you run may be able to ask for the data key in the modes that keep it there. macOS decides whether to prompt you, and on Linux they may be able to read it without asking.
+- **Windows and Linux:** these builds are untested, and the design hasn't been checked against how those systems protect files and secrets. For example, the `0600` file permission means nothing on Windows.
 
 ## Exports
 
@@ -52,11 +53,11 @@ Imported files are treated as untrusted. KeyDepot rejects files over 64 MiB and 
 
 Updates are signed with Ed25519. The app holds the public key, and refuses any update whose signature doesn't match. The private key lives outside the repository, in a password manager and in a CI secret. Anyone who gets it could ship code to every installed app, if they could also publish to the release location.
 
-Beta builds are ad hoc signed rather than signed with an Apple Developer ID, so macOS can't verify who made the first download you install. An update may also make macOS ask again for access to the Keychain item.
+Beta builds aren't signed with an Apple Developer ID or a Windows code signing certificate, so your system can't verify who made the first download you install. An update may also make macOS ask again for access to the Keychain item.
 
 ## File format
 
-The vault and exports share one JSON format, written with `0600` permissions:
+The vault and exports share one JSON format, written with `0600` permissions on macOS and Linux:
 
 ```json
 {

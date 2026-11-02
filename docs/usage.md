@@ -6,11 +6,11 @@ On first launch, KeyDepot asks what should open your keys. Your keys are encrypt
 
 | Mode | What opens your keys | If you lose access |
 |---|---|---|
-| **Touch ID or Mac password** | The system prompt. The vault's key stays in the macOS Keychain. | Keys are lost if the Keychain item is lost, unless you have an export. |
+| **Touch ID or Mac password** (macOS only) | The system prompt. The vault's key stays in the macOS Keychain. | Keys are lost if the Keychain item is lost, unless you have an export. |
 | **KeyDepot password** | A password of at least 8 characters, which KeyDepot doesn't store. | Your recovery code gets you back in. If you lose the password and the code, your keys are gone. |
-| **No extra prompt** | Nothing beyond being logged in. The vault's key stays in the macOS Keychain. Anyone using your unlocked computer can copy your keys. | Keys are lost if the Keychain item is lost, unless you have an export. |
+| **No extra prompt** | Nothing beyond being logged in. The vault's key stays in your system's secret store. Anyone using your unlocked computer can copy your keys. | Keys are lost if the secret store's item is lost, unless you have an export. |
 
-The Touch ID or Mac password option only appears where the system can prompt, which is currently macOS.
+The secret store is the Keychain on macOS, Credential Manager on Windows and the Secret Service on Linux, such as GNOME Keyring or KWallet.
 
 ### Recovery code
 
@@ -24,8 +24,9 @@ If you forget your password, choose **Forgot password?** on the unlock prompt an
 
 Once you pass the prompt, KeyDepot stays unlocked until it locks. It locks when:
 
-- your Mac sleeps or the screen locks
-- you close the window, or press ⌘Q, which closes to the menu bar rather than quitting
+- your computer sleeps or the screen locks (on Linux, when the screen saver starts)
+- you close the window, which keeps KeyDepot running in the tray or menu bar
+- on macOS, you press ⌘Q, which also closes to the menu bar rather than quitting
 - you choose **Lock KeyDepot** from the app or the tray icon
 - you quit, using **Quit KeyDepot** from the menu or the tray icon
 
@@ -42,7 +43,7 @@ These always ask again, even when unlocked: changing the protection, changing th
 
 ## Shortcuts and the command palette
 
-Press ⌘K to open the palette, which lists commands, keys and projects. You can change or remove any shortcut in Settings, except those kept for the system, such as ⌘C and ⌘Q.
+Press ⌘K to open the palette, which lists commands, keys and projects. You can change or remove any shortcut in Settings, except those kept for the system, such as ⌘C and ⌘Q. The shortcuts below are shown for macOS. On Windows and Linux, use Ctrl in place of ⌘ and Shift in place of ⇧.
 
 | Command | Default |
 |---|---|
@@ -56,7 +57,7 @@ Press ⌘K to open the palette, which lists commands, keys and projects. You can
 | Copy key | ⇧⌘C |
 | Reveal or hide key | ⇧⌘R |
 | Update key | ⌘E |
-| Delete key | ⌘⌫ |
+| Delete key | ⌘⌫ (Ctrl+Backspace) |
 
 ## Backups and moving computers
 
@@ -64,11 +65,17 @@ Use **Settings → Export keys** to make a `.keydepot` file with its own passwor
 
 **Import keys** only adds. Imported keys get new IDs and never overwrite existing ones, so importing the same file twice gives you duplicates. Projects with the same name are merged, ignoring case.
 
-Copying the vault file isn't a full backup in the Touch ID and No extra prompt modes, because the key that opens it stays in the Keychain. Make an export instead.
+Copying the vault file isn't a full backup in the Touch ID and No extra prompt modes, because the key that opens it stays in your system's secret store. Make an export instead.
 
 ## Where your files are
 
-On macOS, KeyDepot keeps its files in `~/Library/Application Support/KeyDepot/`. Settings shows the paths of the first two.
+| System | Folder |
+|---|---|
+| macOS | `~/Library/Application Support/KeyDepot/` |
+| Windows | `%AppData%\KeyDepot\` |
+| Linux | `~/.config/KeyDepot/` |
+
+Settings shows the paths of the first two files below.
 
 | File | Contents |
 |---|---|
@@ -82,4 +89,4 @@ On macOS, KeyDepot keeps its files in `~/Library/Application Support/KeyDepot/`.
 
 KeyDepot checks 10 seconds after launch and then once a day while running. You can also choose **Check for Updates…** from the app or tray menu. When a new version is out, a window offers to install it, remind you later or skip that version.
 
-A beta build also sees later betas. A stable build only sees stable releases.
+A beta build also sees later betas. A stable build only sees stable releases. The Debian package on Linux doesn't update itself.
