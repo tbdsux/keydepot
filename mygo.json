@@ -7,5 +7,16 @@
   "updates": {
     "publicKey": "c921TFPUeSdAKvrbcXfia9FO4kMuTpiASXQI/TmkerQ=",
     "github": "tbdsux/keydepot"
+  },
+  "linux": {
+    "webview": false,
+    "comment": "Keep private keys encrypted",
+    "categories": [
+      "Utility",
+      "Security"
+    ],
+    "depends": [
+      "libayatana-appindicator3-1"
+    ]
   }
 }
