@@ -29,6 +29,7 @@ ui/           everything on screen
   widget/       stateless building blocks
   view/         App, its state and its screens
 resources/    files shipped with the app; MyGo requires this at the project root
+docs/         how the app works, for users and contributors; update it when behavior changes
 ```
 
 ## Separation of concerns
