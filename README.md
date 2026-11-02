@@ -1,3 +1,5 @@
+<img src="resources/icon.png" alt="KeyDepot icon" width="128" height="128">
+
 # KeyDepot
 
 A desktop app that keeps your private keys encrypted, on your own computer. Store SSH, PGP and other private keys in one vault, group them by project, and copy one when you need it.
