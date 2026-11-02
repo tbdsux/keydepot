@@ -6,7 +6,8 @@
   "out": "build",
   "updates": {
     "publicKey": "c921TFPUeSdAKvrbcXfia9FO4kMuTpiASXQI/TmkerQ=",
-    "github": "tbdsux/keydepot"
+    "github": "tbdsux/keydepot",
+    "changelog": "CHANGELOG.md"
   },
   "linux": {
     "webview": false,
