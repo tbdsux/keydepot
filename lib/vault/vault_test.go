@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/egoist/mygo"
+	"keydepot/lib/crypt"
 )
 
 const testKey = "-----BEGIN OPENSSH PRIVATE KEY-----\nabc\n-----END OPENSSH PRIVATE KEY-----\n"
@@ -292,36 +293,62 @@ func TestPasswordMode(t *testing.T) {
 
 	wantValue(t, r, "key.A", testKey)
 
-	// Changing the password keeps the code.
-	if err := r.ChangePassword("a new password"); err != nil {
+	// A copy of the vault from before each change, with the secret that
+	// opened it, must open nothing saved after.
+	before, err := os.ReadFile(v.path)
+	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Changing the password replaces the code, and the key under both.
+	changed, err := r.Protect(ModePassword, "a new password")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mustSet(t, r, "key.B", "after the change")
 
 	r = reopen()
 	if err := r.UnlockPassword(testPassword); err == nil {
 		t.Error("old password still works")
 	}
 
-	if err := r.UnlockRecovery(strings.ToLower(FormatCode(code))); err != nil {
-		t.Errorf("code after changing the password, as a person might type it: %v", err)
+	if err := r.UnlockRecovery(code); err == nil {
+		t.Error("old code works after changing the password")
+	}
+
+	if err := r.UnlockRecovery(strings.ToLower(FormatCode(changed))); err != nil {
+		t.Errorf("new code, as a person might type it: %v", err)
 	}
 
 	wantValue(t, r, "key.A", testKey)
+	wantOldCopyOpensNothingNew(t, before, testPassword, r.file.Items["key.B"], "key.B")
 
-	// A new code ends the old one.
-	second, err := r.RenewRecoveryCode()
+	// A new code ends the old one, and needs the password.
+	if _, err := r.RenewRecoveryCode("wrong"); !errors.Is(err, ErrWrongPassword) {
+		t.Errorf("renew with the wrong password: %v", err)
+	}
+
+	if before, err = os.ReadFile(v.path); err != nil {
+		t.Fatal(err)
+	}
+
+	second, err := r.RenewRecoveryCode("a new password")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	r = reopen()
-	if err := r.UnlockRecovery(code); err == nil {
+	if err := r.UnlockRecovery(changed); err == nil {
 		t.Error("old code works after making a new one")
 	}
 
 	if err := r.UnlockRecovery(second); err != nil {
 		t.Fatal(err)
 	}
+
+	mustSet(t, r, "key.C", "after the renewal")
+	wantOldCopyOpensNothingNew(t, before, "a new password", r.file.Items["key.C"], "key.C")
 
 	// Stopping after the code changes nothing: the old password and code work.
 	r.Lock()
@@ -363,6 +390,26 @@ func TestPasswordMode(t *testing.T) {
 	}
 
 	wantValue(t, r, "key.A", testKey)
+}
+
+// wantOldCopyOpensNothingNew unlocks an old copy of the vault with its old
+// password, and checks that the key it gives can't open sealed.
+func wantOldCopyOpensNothingNew(t *testing.T, old []byte, password string, sealed []byte, name string) {
+	t.Helper()
+
+	f, err := ParseFile(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	oldKey, err := crypt.Unwrap(f.Password, password, crypt.RolePassword)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := crypt.Unseal(oldKey, sealed, name); err == nil {
+		t.Errorf("an old copy of the vault opens %s", name)
+	}
 }
 
 type failingSecrets struct {
@@ -569,6 +616,24 @@ func TestKeychainFailureLeavesTheVaultAlone(t *testing.T) {
 	if !v.NeedsSetup() {
 		t.Error("setup finished without the Keychain")
 	}
+}
+
+func TestLeavingPasswordModeReplacesTheKey(t *testing.T) {
+	v, _ := newTestVault(t, ModePassword)
+	mustSet(t, v, "key.A", testKey)
+
+	before, err := os.ReadFile(v.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := v.Protect(ModeSystem, ""); err != nil {
+		t.Fatal(err)
+	}
+
+	mustSet(t, v, "key.B", "after leaving")
+	wantValue(t, v, "key.A", testKey)
+	wantOldCopyOpensNothingNew(t, before, testPassword, v.file.Items["key.B"], "key.B")
 }
 
 func TestWritesWhileLockedKeepNoKey(t *testing.T) {

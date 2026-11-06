@@ -127,15 +127,10 @@ func (a *App) protectionCards(c *ui.Context) {
 		if current == vault.ModePassword {
 			ui.Divider(c)
 
-			widget.SettingRow(c, icon.Lock, "Password", "Changing it keeps your recovery code valid.", func() {
+			widget.SettingRow(c, icon.Lock, "Password", "Changing it also gives you a new recovery code.", func() {
 				ui.Button(c, "Change password").OnClick(func() {
 					a.reauth("change your password", func() {
-						a.askFor(&passwordAsk{
-							title: "Choose a new password", hint: "Your recovery code keeps working.",
-							action: "Save password", label: "New password", minLen: minPasswordLen,
-							work: a.vault.ChangePassword,
-							then: func() { a.notice = "Password changed." },
-						})
+						a.askNewPassword("Choose a new password", func() { a.notice = "Password changed." }, nil)
 					})
 				})
 			})
@@ -143,9 +138,7 @@ func (a *App) protectionCards(c *ui.Context) {
 			ui.Divider(c)
 
 			widget.SettingRow(c, icon.Shield, "Recovery code", "A new code replaces the old one, which stops working.", func() {
-				ui.Button(c, "New recovery code").OnClick(func() {
-					a.reauth("make a new recovery code", a.renewRecoveryCode)
-				})
+				ui.Button(c, "New recovery code").OnClick(a.renewRecoveryCode)
 			})
 		}
 	})
@@ -161,16 +154,22 @@ func (a *App) protectionCards(c *ui.Context) {
 	})
 }
 
+// renewRecoveryCode asks for the password itself, as it also wraps the new
+// data key that ends the old code. It always asks, like reauth.
 func (a *App) renewRecoveryCode() {
 	var code string
-	var err error
 
-	a.run(func() { code, err = a.vault.RenewRecoveryCode() }, func() {
-		if err != nil {
-			a.notice = err.Error()
-			return
-		}
-
-		a.recoveryCode, a.recoveryTyped, a.recoveryErr = code, "", ""
+	a.Lock()
+	a.askFor(&passwordAsk{
+		title: "Enter your KeyDepot password", hint: "KeyDepot needs it to make a new recovery code.",
+		action: "Continue", label: "Password",
+		work: func(password string) (err error) {
+			code, err = a.vault.RenewRecoveryCode(password)
+			return err
+		},
+		then: func() {
+			a.unlocked = true
+			a.recoveryCode, a.recoveryTyped, a.recoveryErr = code, "", ""
+		},
 	})
 }

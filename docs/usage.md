@@ -20,6 +20,8 @@ Keep the code in a password manager, away from the vault and its backups. Anyone
 
 If you forget your password, choose **Forgot password?** on the unlock prompt and enter the code. You then set a new password and get a new code, and the old code stops working. Canceling partway keeps the old password and code.
 
+Changing your password in **Settings** also gives you a new recovery code, and **New recovery code** asks for your password. Either way the old password and code stop working. A backup copy of the vault still opens with them, but holds only the keys it had then.
+
 ## When KeyDepot asks again
 
 Once you pass the prompt, KeyDepot stays unlocked until it locks. It locks when:

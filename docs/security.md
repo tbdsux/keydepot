@@ -19,7 +19,7 @@ Private key ── AES-256-GCM ── data key
 - **Sealing:** AES-256-GCM with a random nonce for each write. The item's name is the additional data, so a sealed key can't be swapped for another without detection. Code: [`lib/crypt`](../lib/crypt/crypt.go).
 - **Key derivation:** Argon2id with 3 passes, 64 MiB of memory, 4 threads and a random 16-byte salt.
 - **Recovery code:** 26 random base32 characters, about 130 bits. It's wrapped the same way as the password, under a separate role, so a wrapped password key can't be used as a wrapped recovery key.
-- **Changing modes:** moving into password mode generates a new data key and re-encrypts every item in one write of the vault, so a data key the Keychain held no longer opens it. Changing the password re-wraps the same data key, so the recovery code keeps working.
+- **Changing modes:** moving into password mode, changing the password, making a new recovery code and leaving password mode all generate a new data key and re-encrypt every item in one write of the vault. A data key the Keychain held, or an old copy of the vault with its old password or code, then opens nothing saved after. That's why changing the password also gives you a new recovery code.
 - **Writes while locked:** in the modes without a password, adding a key or note needs no prompt, so KeyDepot reads the data key from the Keychain for that write and forgets it right after.
 
 ## What the modes protect against

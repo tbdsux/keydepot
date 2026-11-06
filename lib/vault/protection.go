@@ -94,11 +94,24 @@ func (v *Vault) Protect(mode, password string) (string, error) {
 		return v.intoPassword(password)
 	}
 
-	if v.dataKey == nil {
-		v.dataKey = crypt.NewKey()
+	key, items, rotated := v.dataKey, v.file.Items, false
+
+	switch {
+	case key == nil:
+		key = crypt.NewKey()
+
+	case v.file.Password != nil:
+		// A copy of the vault from before, with its password or code, opens
+		// the old key: it must open nothing saved from now on.
+		var err error
+		if key, items, err = v.rekeyed(); err != nil {
+			return "", err
+		}
+
+		rotated = true
 	}
 
-	data, err := json.Marshal(keychainItem{Mode: mode, Key: v.dataKey})
+	data, err := json.Marshal(keychainItem{Mode: mode, Key: key})
 	if err != nil {
 		return "", err
 	}
@@ -108,28 +121,49 @@ func (v *Vault) Protect(mode, password string) (string, error) {
 	}
 
 	f := v.file
-	f.Mode, f.Password, f.Recovery = mode, nil, nil
+	f.Mode, f.Password, f.Recovery, f.Items = mode, nil, nil, items
+	if err := v.save(f); err != nil {
+		return "", err
+	}
 
-	return "", v.save(f)
+	if rotated {
+		clear(v.dataKey)
+	}
+
+	v.dataKey = key
+
+	return "", nil
 }
 
-// intoPassword replaces the data key, which the Keychain could give up until
-// now, in one write of the vault.
-func (v *Vault) intoPassword(password string) (string, error) {
+// rekeyed seals every item again under a new data key, so that no old copy
+// of the vault, with the secret that opened it, opens what is saved next.
+func (v *Vault) rekeyed() ([]byte, map[string][]byte, error) {
 	dataKey := crypt.NewKey()
 	items := make(map[string][]byte, len(v.file.Items))
 
 	for name, sealed := range v.file.Items {
 		value, err := crypt.Unseal(v.dataKey, sealed, name)
 		if err != nil {
-			return "", fmt.Errorf("A key is damaged, so nothing was changed: %w", err)
+			return nil, nil, fmt.Errorf("A key is damaged, so nothing was changed: %w", err)
 		}
 
 		if items[name], err = crypt.Seal(dataKey, value, name); err != nil {
-			return "", err
+			return nil, nil, err
 		}
 
 		clear(value)
+	}
+
+	return dataKey, items, nil
+}
+
+// intoPassword replaces the data key, which the Keychain, an old password or
+// an old code could give up until now, in one write of the vault. Changing
+// the password and renewing the code both come here.
+func (v *Vault) intoPassword(password string) (string, error) {
+	dataKey, items, err := v.rekeyed()
+	if err != nil {
+		return "", err
 	}
 
 	code := newRecoveryCode()
@@ -158,43 +192,16 @@ func (v *Vault) intoPassword(password string) (string, error) {
 	return code, nil
 }
 
-// ChangePassword keeps the recovery code valid.
-func (v *Vault) ChangePassword(password string) error {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-
-	if v.dataKey == nil {
-		return ErrLocked
-	}
-
-	w, err := crypt.Wrap(v.dataKey, password, crypt.RolePassword)
-	if err != nil {
-		return err
-	}
-
-	f := v.file
-	f.Password = w
-
-	return v.save(f)
-}
-
-// RenewRecoveryCode invalidates the old code.
-func (v *Vault) RenewRecoveryCode() (string, error) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-
-	if v.dataKey == nil {
-		return "", ErrLocked
-	}
-
-	code := newRecoveryCode()
-	w, err := crypt.Wrap(v.dataKey, code, crypt.RoleRecovery)
-	if err != nil {
+// RenewRecoveryCode replaces the data key with the code, as only that stops
+// the old code opening a copy of the vault from before. It needs the
+// password to wrap the new key, and checks it first.
+func (v *Vault) RenewRecoveryCode(password string) (string, error) {
+	if err := v.UnlockPassword(password); err != nil {
 		return "", err
 	}
 
-	f := v.file
-	f.Recovery = w
+	v.mu.Lock()
+	defer v.mu.Unlock()
 
-	return code, v.save(f)
+	return v.intoPassword(password)
 }

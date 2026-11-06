@@ -326,20 +326,30 @@ func TestViewSettingsChangesProtection(t *testing.T) {
 	a.askValue, a.askConfirm = "brand new password", "brand new password"
 
 	tt.Frame()
-	click(t, tt, "Save password")
+	click(t, tt, "Set password")
 
-	if a.ask != nil || a.vault.UnlockPassword("brand new password") != nil {
-		t.Fatalf("still asking: %q", tt.Texts())
+	changed := confirmCode(t, a, tt)
+	if a.ask != nil || a.vault.UnlockPassword("brand new password") != nil || changed == first {
+		t.Fatalf("still asking %q, or the code didn't change", tt.Texts())
 	}
 
 	click(t, tt, "New recovery code")
 
+	a.askValue = "wrong password"
+
+	tt.Frame()
+	click(t, tt, "Continue")
+
+	if !tt.HasText(vault.ErrWrongPassword.Error()) {
+		t.Errorf("wrong password: %q", tt.Texts())
+	}
+
 	a.askValue = "brand new password"
 
 	tt.Frame()
-	click(t, tt, "Unlock")
+	click(t, tt, "Continue")
 
-	if second := confirmCode(t, a, tt); second == first {
+	if second := confirmCode(t, a, tt); second == changed {
 		t.Error("the code didn't change")
 	}
 
