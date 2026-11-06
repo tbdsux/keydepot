@@ -2,6 +2,22 @@
 
 Each release needs a `## <version>` section matching `version` in `mygo.json`, or its build fails. The section becomes the release's description and what the update window shows.
 
+## 0.1.0-beta.2
+
+### New
+
+- Lock KeyDepot automatically after the computer sits idle
+- Keep an encrypted note with each key
+- Import keys from pasted or chosen `.env` files, and copy a project's keys as `.env`
+- Show and copy an SSH key's public key and fingerprint
+
+### Fixes
+
+- Clear copied secrets from the clipboard when KeyDepot locks or quits
+- Replace the vault's data key whenever password protection changes, and keep none in memory after saving while locked
+- Write files through a fresh temporary file each time, so an interrupted save can't leave a stale one behind
+- Cap the idle time read from the auto-lock settings file
+
 ## 0.1.0-beta.1
 
 First beta release.
