@@ -54,7 +54,7 @@ func (a *App) View(c *ui.Context) {
 		current = &visible[a.chosen]
 	}
 
-	if a.revealedID != "" && (current == nil || current.ID != a.revealedID || a.page == "settings") {
+	if id := a.shownID(); id != "" && (current == nil || current.ID != id || a.page == "settings") {
 		a.hide()
 	}
 

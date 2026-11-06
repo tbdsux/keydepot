@@ -6,6 +6,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 	"keydepot/lib/auth"
+	"keydepot/lib/pubkey"
 	"keydepot/lib/shortcut"
 	"keydepot/lib/store"
 	"keydepot/lib/vault"
@@ -30,6 +31,8 @@ type App struct {
 
 	revealed   string
 	revealedID string
+	public     pubkey.Key
+	publicID   string
 
 	adding bool
 	// editingID is the key the dialog updates, or empty when it adds one.

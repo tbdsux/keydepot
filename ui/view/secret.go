@@ -1,21 +1,30 @@
 package view
 
 import (
+	"cmp"
 	"fmt"
 	"time"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
+	"keydepot/lib/pubkey"
 	"keydepot/lib/store"
 )
 
 const clipboardLifetime = 60 * time.Second
 
-func (a *App) hide() { a.revealed, a.revealedID = "", "" }
+// hide takes everything read from the vault off the screen.
+func (a *App) hide() {
+	a.revealed, a.revealedID = "", ""
+	a.public, a.publicID = pubkey.Key{}, ""
+}
+
+// shownID is the key whose vault contents are on screen, if any.
+func (a *App) shownID() string { return cmp.Or(a.revealedID, a.publicID) }
 
 func (a *App) toggleReveal(e store.Entry) {
 	if a.revealedID == e.ID {
-		a.hide()
+		a.revealed, a.revealedID = "", ""
 		return
 	}
 
