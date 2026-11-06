@@ -3,6 +3,7 @@ package durable
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -29,7 +30,10 @@ func TestWriteFileIgnoresAPlantedTempFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !info.Mode().IsRegular() || info.Mode().Perm() != 0o600 {
+	// Windows has no permission bits: Go reports every writable file as 0666.
+	wantPerm := runtime.GOOS == "windows" || info.Mode().Perm() == 0o600
+
+	if !info.Mode().IsRegular() || !wantPerm {
 		t.Errorf("file mode %v", info.Mode())
 	}
 
