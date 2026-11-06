@@ -15,6 +15,7 @@ app/          package main: start up and wire dependencies, nothing else
 lib/          logic with no knowledge of any screen
   auth/         system prompt, Touch ID
   crypt/        sealing, key wrapping, Argon2id costs
+  dotenv/       reading and writing .env text
   durable/      crash-safe file writes
   export/       .keydepot export files
   paths/        where KeyDepot's files live
