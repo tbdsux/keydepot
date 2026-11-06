@@ -54,6 +54,13 @@ func init() {
 			run:      func(a *App, _ *ui.Context, _ store.Entry) { a.openEnvImport() },
 		},
 		{
+			id:       "copyEnv",
+			title:    "Copy keys as .env",
+			icon:     icon.Copy,
+			fallback: shortcut.Shortcut{Mods: ui.Cmd | ui.Shift, Key: ui.KeyE},
+			run:      func(a *App, c *ui.Context, _ store.Entry) { a.copyEnv(c.Services()) },
+		},
+		{
 			id:       "search",
 			title:    "Search keys",
 			icon:     icon.Search,

@@ -168,3 +168,38 @@ func (a *App) saveEnvImport() {
 		a.notice = fmt.Sprintf("Imported %d keys.", n)
 	})
 }
+
+// copyEnv copies the project's keys, or every key outside a project page, as
+// one .env file. It always asks again, as exporting does.
+func (a *App) copyEnv(services ui.Services) {
+	project := a.project()
+
+	var entries []store.Entry
+
+	for _, e := range a.store.Entries {
+		if project == "" || e.Project == project {
+			entries = append(entries, e)
+		}
+	}
+
+	if len(entries) == 0 {
+		a.notice = "There are no keys to copy."
+		return
+	}
+
+	a.reauth("copy keys as .env", func() {
+		vars := make([]dotenv.Var, 0, len(entries))
+
+		for _, e := range entries {
+			value, err := a.store.Get(e.ID)
+			if err != nil {
+				a.notice = fmt.Sprintf("“%s” can't be read, so nothing was copied: %v", e.Name, err)
+				return
+			}
+
+			vars = append(vars, dotenv.Var{Name: e.Name, Value: value})
+		}
+
+		a.copySecret(services, dotenv.Format(vars), fmt.Sprintf("Copied %d keys as .env", len(vars)))
+	})
+}

@@ -58,6 +58,14 @@ func (a *App) keyList(c *ui.Context, visible []store.Entry) {
 					Children(func() {
 						ui.Icon(c, icon.Trash).FontSize(15).TextColor(t.Danger)
 					})
+
+				ui.Button(c, "").
+					Label("Copy as .env").
+					Padding(8, 9).
+					OnClick(func() { a.copyEnv(c.Services()) }).
+					Children(func() {
+						ui.Icon(c, icon.Copy).FontSize(15)
+					})
 			}
 
 			ui.PrimaryButton(c, "").Label("New key").OnClick(a.newKey).Children(func() {

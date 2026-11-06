@@ -4,10 +4,12 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"keydepot/lib/dotenv"
 )
 
-func TestViewEnvImport(t *testing.T) {
-	a, _, _, _, tt := newVaultApp(t, true)
+func TestViewEnvImportAndCopy(t *testing.T) {
+	a, _, _, prompts, tt := newVaultApp(t, true)
 	click(t, tt, "Continue")
 
 	if _, err := a.store.AddProject("Web"); err != nil {
@@ -41,6 +43,24 @@ func TestViewEnvImport(t *testing.T) {
 		if e.Project != "Web" {
 			t.Errorf("%s filed in %q", e.Name, e.Project)
 		}
+	}
+
+	if _, err := a.store.Add("Elsewhere", "x", ""); err != nil {
+		t.Fatal(err)
+	}
+
+	before := len(*prompts)
+	a.unlocked = true
+
+	click(t, tt, "Copy as .env")
+
+	if len(*prompts) != before+1 {
+		t.Errorf("copy didn't ask again: %v", *prompts)
+	}
+
+	got, err := dotenv.Parse(tt.Clipboard())
+	if err != nil || len(got) != 2 || got[1] != (dotenv.Var{Name: "PEM", Value: "-----BEGIN-----\nx\n-----END-----"}) {
+		t.Errorf("clipboard %q: %v, %v", tt.Clipboard(), got, err)
 	}
 }
 

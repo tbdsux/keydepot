@@ -31,7 +31,7 @@ Once you pass the prompt, KeyDepot stays unlocked until it locks. It locks when:
 - you choose **Lock KeyDepot** from the app or the tray icon
 - you quit, using **Quit KeyDepot** from the menu or the tray icon
 
-These always ask again, even when unlocked: changing the protection, changing the password, making a new recovery code, and exporting.
+These always ask again, even when unlocked: changing the protection, changing the password, making a new recovery code, exporting, and copying keys as `.env`.
 
 ## Managing keys
 
@@ -54,6 +54,7 @@ Press ⌘K to open the palette, which lists commands, keys and projects. You can
 | New key | ⌘N |
 | New project | ⇧⌘N |
 | Import .env | ⇧⌘I |
+| Copy keys as .env | ⇧⌘E |
 | Search keys | ⌘F |
 | Show all keys | ⌘1 |
 | Open settings | ⌘, |
@@ -72,6 +73,8 @@ Use **Settings → Export keys** to make a `.keydepot` file with its own passwor
 ## .env files
 
 **Settings → Import .env**, or **Import .env** in the command palette, turns each `NAME=value` line into a key named `NAME`. Paste the text, or choose one or more files with **Choose files…**. Keys go into the project you pick, which starts as the project showing. Comments, `export ` and quoted values are understood, including double-quoted values over several lines. Variables with empty values are skipped, and a repeated name gives two keys. Nothing is added if any line can't be read.
+
+On a project's page, **Copy as .env** copies its keys as one `.env` file. **Copy keys as .env** in the command palette does the same, or copies every key from outside a project page. It always asks again, and the clipboard clears after 60 seconds like a copied key. A name that isn't a valid variable name becomes upper snake case, so "Deploy key" is `DEPLOY_KEY`. KeyDepot never writes a `.env` file: save one yourself only where you need it, and keep it out of git.
 
 Copying the vault file isn't a full backup in the Touch ID and No extra prompt modes, because the key that opens it stays in your system's secret store. Make an export instead.
 
