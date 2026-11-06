@@ -9,13 +9,16 @@ import (
 )
 
 // WriteFile replaces path so that a crash leaves the old file or the
-// new one. File.Sync is F_FULLFSYNC on macOS.
+// new one. File.Sync is F_FULLFSYNC on macOS. The temporary file is new and
+// only the user's, so nothing planted beside path, as in a shared folder,
+// receives the data.
 func WriteFile(path string, data []byte) error {
-	tmp := path + ".tmp"
-	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
 	if err != nil {
 		return err
 	}
+
+	tmp := f.Name()
 
 	_, err = f.Write(data)
 	if err == nil {
