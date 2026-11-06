@@ -14,7 +14,7 @@ A desktop app that keeps your private keys encrypted, on your own computer. Stor
 - **Your choice of protection:** a KeyDepot password with a recovery code, no extra prompt, or on macOS, Touch ID or your Mac password.
 - **Projects and search:** group keys, search them, and do everything from the command palette.
 - **Public keys:** see an SSH key's public key and fingerprint.
-- **Careful with secrets:** the clipboard clears after 60 seconds, and KeyDepot locks when your computer sleeps or locks or when you close the window.
+- **Careful with secrets:** the clipboard clears after 60 seconds, and KeyDepot locks when your computer sleeps, locks or sits idle, or when you close the window.
 - **Encrypted export and import:** move keys between computers in a password-protected file.
 - **Signed updates:** the app checks for new versions and verifies them before installing.
 

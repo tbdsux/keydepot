@@ -25,6 +25,7 @@ If you forget your password, choose **Forgot password?** on the unlock prompt an
 Once you pass the prompt, KeyDepot stays unlocked until it locks. It locks when:
 
 - your computer sleeps or the screen locks (on Linux, when the screen saver starts)
+- the computer goes unused for 15 minutes. Change this, or turn it off, in **Settings → Lock when idle**. It counts keyboard and mouse use in any app, and some Linux desktops don't report it, so it never locks there
 - you close the window, which keeps KeyDepot running in the tray or menu bar
 - on macOS, you press ⌘Q, which also closes to the menu bar rather than quitting
 - you choose **Lock KeyDepot** from the app or the tray icon
@@ -83,6 +84,7 @@ Settings shows the paths of the first two files below.
 | `vault.keydepot` | Your encrypted keys |
 | `keys.json` | Key names, types, projects and dates, **unencrypted** |
 | `shortcuts.json` | Your shortcut changes |
+| `autolock.json` | How long the computer sits idle before KeyDepot locks |
 | `updater.json` | Update preferences |
 | `window-state.json` | Window size and position |
 

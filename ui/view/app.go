@@ -6,6 +6,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 	"keydepot/lib/auth"
+	"keydepot/lib/autolock"
 	"keydepot/lib/pubkey"
 	"keydepot/lib/shortcut"
 	"keydepot/lib/store"
@@ -85,6 +86,9 @@ type App struct {
 	recordOpen    bool
 	recordingID   string
 	recordErr     string
+
+	// autoLock is nil when there is nowhere to keep the choice.
+	autoLock *autolock.AutoLock
 
 	// notice waits for the next frame: a Context ignores calls made between
 	// frames, which is when auth answers.
@@ -176,6 +180,8 @@ type Options struct {
 	PickSave, PickOpen func() (string, error)
 	// ShortcutsPath is empty when the user's shortcuts can't be kept.
 	ShortcutsPath string
+	// AutoLock is nil when there is nowhere to keep the choice.
+	AutoLock *autolock.AutoLock
 }
 
 // New opens the App main shows.
@@ -185,6 +191,7 @@ func New(o Options) *App {
 	a.vault, a.loadErr = o.Vault, o.LoadErr
 	a.authenticate, a.systemAuth, a.touchID = o.Authenticate, o.SystemAuth, o.TouchID
 	a.run, a.pickSave, a.pickOpen = o.Run, o.PickSave, o.PickOpen
+	a.autoLock = o.AutoLock
 
 	// Losing shortcuts is no reason to stop: the defaults work.
 	if o.ShortcutsPath != "" {

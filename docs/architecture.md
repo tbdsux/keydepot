@@ -17,6 +17,7 @@ Dependencies point one way: `app` → `ui` → `lib`.
 | `lib/crypt` | AES-GCM and Argon2id |
 | `lib/export` | `.keydepot` export files |
 | `lib/pubkey` | The public half and fingerprint of an SSH private key |
+| `lib/autolock` | Locking after the computer sits idle, and saving that choice |
 | `lib/auth` | The macOS system prompt, called through `purego`; other systems don't offer it |
 | `lib/durable` | Crash-safe file writes |
 | `lib/shortcut`, `lib/paths` | Saved shortcuts, and where files live |
@@ -28,7 +29,7 @@ Dependencies point one way: `app` → `ui` → `lib`.
 1. Takes the single-instance lock. A second copy brings the first to the front and exits, because two copies would overwrite each other's vault changes.
 2. Starts the updater.
 3. When the app is ready, opens the vault and then the store. An unreadable file shows an error rather than starting empty, because the next save would overwrite it.
-4. Creates the window and the tray icon, and locks on sleep and screen lock.
+4. Creates the window and the tray icon, and locks on sleep, screen lock and idle time.
 
 The app then shows one of three screens:
 
@@ -74,6 +75,6 @@ Slow work, such as Argon2id and system prompts, goes through `App.run`, which do
 
 ## Tests
 
-`CGO_ENABLED=0 go test ./...` covers `lib/crypt`, `lib/export`, `lib/pubkey`, `lib/shortcut`, `lib/store`, `lib/vault`, `ui/update` and `ui/view`. The view tests drive the UI with MyGo's `ui.NewTester`.
+`CGO_ENABLED=0 go test ./...` covers `lib/autolock`, `lib/crypt`, `lib/export`, `lib/pubkey`, `lib/shortcut`, `lib/store`, `lib/vault`, `ui/update` and `ui/view`. The view tests drive the UI with MyGo's `ui.NewTester`.
 
 CI runs them on macOS, Windows and Linux. `lib/durable` and `lib/auth` have no tests of their own, and the system prompt and each system's secret store need checking by hand on a real computer.

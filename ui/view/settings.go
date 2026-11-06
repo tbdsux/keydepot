@@ -23,6 +23,10 @@ func (a *App) settings(c *ui.Context) {
 					a.protectionCards(c)
 				}
 
+				if a.autoLock != nil {
+					a.autoLockCard(c)
+				}
+
 				a.shortcutsCard(c)
 
 				widget.Card(c, func() {

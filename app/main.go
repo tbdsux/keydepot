@@ -7,6 +7,7 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 	"keydepot/lib/auth"
+	"keydepot/lib/autolock"
 	"keydepot/lib/paths"
 	"keydepot/lib/store"
 	"keydepot/lib/vault"
@@ -39,6 +40,12 @@ func main() {
 
 		// Losing shortcuts is no reason to stop: the defaults work.
 		shortcuts, _ := paths.Shortcuts()
+
+		// An unreadable choice still locks, after the default time.
+		var idle *autolock.AutoLock
+		if path, err := paths.AutoLock(); err == nil {
+			idle, _ = autolock.Open(path)
+		}
 
 		a := view.New(view.Options{
 			Store:        s,
@@ -75,6 +82,7 @@ func main() {
 				return picked[0], nil
 			},
 			ShortcutsPath: shortcuts,
+			AutoLock:      idle,
 		})
 
 		win = mygo.NewWindow(mygo.WindowOptions{
@@ -91,6 +99,10 @@ func main() {
 		lock := func() { win.Update(a.Lock) }
 		mygo.Power.OnSuspend(lock)
 		mygo.Power.OnLockScreen(lock)
+
+		if idle != nil {
+			idle.Watch(lock)
+		}
 
 		// Without an icon closing the window quits, as there would be no way back.
 		actions := tray.Actions{
