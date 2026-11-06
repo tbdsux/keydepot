@@ -25,6 +25,14 @@ func TestOpenAndSave(t *testing.T) {
 		}
 	}
 
+	if err := os.WriteFile(path, []byte(`{"lockAfterMinutes":9223372036854775807}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	if l, err := Open(path); err != nil || l.After() != maxMinutes*time.Minute {
+		t.Errorf("huge value: %v, %v", l.After(), err)
+	}
+
 	if err := os.WriteFile(path, []byte("{"), 0o600); err != nil {
 		t.Fatal(err)
 	}

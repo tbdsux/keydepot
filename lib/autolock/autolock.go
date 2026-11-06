@@ -18,6 +18,9 @@ import (
 // the user chose otherwise.
 const Default = 15 * time.Minute
 
+// maxMinutes caps a hand-edited file, whose huge value would overflow into never.
+const maxMinutes = 24 * 60
+
 // checkEvery bounds how late a lock comes.
 const checkEvery = 10 * time.Second
 
@@ -52,7 +55,7 @@ func Open(path string) (*AutoLock, error) {
 		return l, fmt.Errorf("%s: %w", path, err)
 	}
 
-	l.after.Store(int64(max(saved.LockAfterMinutes, 0)) * int64(time.Minute))
+	l.after.Store(int64(min(max(saved.LockAfterMinutes, 0), maxMinutes)) * int64(time.Minute))
 
 	return l, nil
 }
