@@ -45,6 +45,11 @@ type App struct {
 	draftProject string
 	formErr      string
 
+	// envOpen shows the .env import, whose draft holds secrets.
+	envOpen              bool
+	envDraft, envProject string
+	envErr               string
+
 	addingProject    bool
 	draftProjectName string
 	projectErr       string
@@ -66,7 +71,9 @@ type App struct {
 	run func(work, then func())
 	// pickSave and pickOpen ask for a file, returning "" when canceled.
 	pickSave, pickOpen func() (string, error)
-	setupMode          string
+	// pickEnv asks for .env files, returning none when canceled.
+	pickEnv   func() ([]string, error)
+	setupMode string
 
 	ask                *passwordAsk
 	askOpen, askBusy   bool
@@ -149,6 +156,7 @@ func (a *App) Lock() {
 	// The draft may hold a private key, and a hidden window builds no frame to clear it.
 	a.adding = false
 	a.draftName, a.draftKey, a.formErr, a.editingID = "", "", "", ""
+	a.envOpen, a.envDraft, a.envErr = false, "", ""
 
 	if a.vault != nil {
 		a.vault.Lock()
@@ -180,6 +188,8 @@ type Options struct {
 	Run func(work, then func())
 	// PickSave and PickOpen ask for a file, returning "" when canceled.
 	PickSave, PickOpen func() (string, error)
+	// PickEnv asks for .env files, returning none when canceled.
+	PickEnv func() ([]string, error)
 	// ShortcutsPath is empty when the user's shortcuts can't be kept.
 	ShortcutsPath string
 	// AutoLock is nil when there is nowhere to keep the choice.
@@ -192,7 +202,7 @@ func New(o Options) *App {
 	a.auth = a.prompt
 	a.vault, a.loadErr = o.Vault, o.LoadErr
 	a.authenticate, a.systemAuth, a.touchID = o.Authenticate, o.SystemAuth, o.TouchID
-	a.run, a.pickSave, a.pickOpen = o.Run, o.PickSave, o.PickOpen
+	a.run, a.pickSave, a.pickOpen, a.pickEnv = o.Run, o.PickSave, o.PickOpen, o.PickEnv
 	a.autoLock = o.AutoLock
 
 	// Losing shortcuts is no reason to stop: the defaults work.

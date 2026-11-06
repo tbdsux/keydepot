@@ -47,6 +47,13 @@ func init() {
 			run:      func(a *App, _ *ui.Context, _ store.Entry) { a.addingProject = true },
 		},
 		{
+			id:       "importEnv",
+			title:    "Import .env",
+			icon:     icon.Plus,
+			fallback: shortcut.Shortcut{Mods: ui.Cmd | ui.Shift, Key: ui.KeyI},
+			run:      func(a *App, _ *ui.Context, _ store.Entry) { a.openEnvImport() },
+		},
+		{
 			id:       "search",
 			title:    "Search keys",
 			icon:     icon.Search,

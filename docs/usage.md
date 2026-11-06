@@ -53,6 +53,7 @@ Press ⌘K to open the palette, which lists commands, keys and projects. You can
 | Open command palette | ⌘K |
 | New key | ⌘N |
 | New project | ⇧⌘N |
+| Import .env | ⇧⌘I |
 | Search keys | ⌘F |
 | Show all keys | ⌘1 |
 | Open settings | ⌘, |
@@ -67,6 +68,10 @@ Press ⌘K to open the palette, which lists commands, keys and projects. You can
 Use **Settings → Export keys** to make a `.keydepot` file with its own password of at least 12 characters. Nothing can recover that password, so keep it apart from the file.
 
 **Import keys** only adds. Imported keys get new IDs and never overwrite existing ones, so importing the same file twice gives you duplicates. Projects with the same name are merged, ignoring case.
+
+## .env files
+
+**Settings → Import .env**, or **Import .env** in the command palette, turns each `NAME=value` line into a key named `NAME`. Paste the text, or choose one or more files with **Choose files…**. Keys go into the project you pick, which starts as the project showing. Comments, `export ` and quoted values are understood, including double-quoted values over several lines. Variables with empty values are skipped, and a repeated name gives two keys. Nothing is added if any line can't be read.
 
 Copying the vault file isn't a full backup in the Touch ID and No extra prompt modes, because the key that opens it stays in your system's secret store. Make an export instead.
 

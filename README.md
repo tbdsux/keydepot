@@ -16,6 +16,7 @@ A desktop app that keeps your private keys encrypted, on your own computer. Stor
 - **Public keys and notes:** see an SSH key's public key and fingerprint, and keep encrypted notes beside each key.
 - **Careful with secrets:** the clipboard clears after 60 seconds, and KeyDepot locks when your computer sleeps, locks or sits idle, or when you close the window.
 - **Encrypted export and import:** move keys between computers in a password-protected file.
+- **.env import:** turn `.env` files into keys.
 - **Signed updates:** the app checks for new versions and verifies them before installing.
 
 KeyDepot has no account and no cloud sync. Its only network traffic is checking for and downloading updates.

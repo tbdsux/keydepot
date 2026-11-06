@@ -81,6 +81,14 @@ func main() {
 
 				return picked[0], nil
 			},
+			PickEnv: func() ([]string, error) {
+				return mygo.Dialog.Open(mygo.OpenDialogOptions{
+					Parent:          win,
+					Title:           "Import .env files",
+					Multiple:        true,
+					ShowHiddenFiles: true,
+				})
+			},
 			ShortcutsPath: shortcuts,
 			AutoLock:      idle,
 		})

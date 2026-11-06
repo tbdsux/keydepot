@@ -155,6 +155,7 @@ func (a *App) protectionCards(c *ui.Context) {
 			ui.Row(c).Gap(8).Children(func() {
 				ui.Button(c, "Export keys").OnClick(a.exportKeys)
 				ui.Button(c, "Import keys").OnClick(a.importKeys)
+				ui.Button(c, "Import .env").OnClick(a.openEnvImport)
 			})
 		})
 	})

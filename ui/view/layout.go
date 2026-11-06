@@ -42,6 +42,10 @@ func (a *App) View(c *ui.Context) {
 		a.draftName, a.draftKey, a.formErr, a.editingID = "", "", "", ""
 	}
 
+	if !a.envOpen {
+		a.envDraft, a.envErr = "", ""
+	}
+
 	visible := a.visible()
 	a.chosen = min(a.chosen, len(visible)-1)
 	if a.chosen < 0 && len(visible) > 0 {
@@ -91,6 +95,7 @@ func (a *App) View(c *ui.Context) {
 
 	a.bindShortcuts(c, target)
 	a.addDialog(c)
+	a.envDialog(c)
 	a.projectDialog(c)
 	a.commandPalette(c, target)
 	a.shortcutDialog(c)
