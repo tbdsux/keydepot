@@ -85,7 +85,7 @@ func (v *Vault) Protect(mode, password string) (string, error) {
 	defer v.mu.Unlock()
 
 	if v.exists && v.dataKey == nil {
-		if err := v.readyLocked(); err != nil {
+		if _, err := v.loadLocked(); err != nil {
 			return "", err
 		}
 	}

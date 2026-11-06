@@ -213,14 +213,25 @@ func (v *Vault) loadLocked() (string, error) {
 	return item.Mode, nil
 }
 
-func (v *Vault) readyLocked() error {
+// readyLocked readies the data key for one call, which calls done after. A key
+// it had to load, which writes in the modes without a password do without a
+// prompt, is forgotten then: a locked vault keeps no key in memory.
+func (v *Vault) readyLocked() (done func(), err error) {
 	if v.dataKey != nil {
-		return nil
+		return func() {}, nil
 	}
 
-	_, err := v.loadLocked()
+	if _, err := v.loadLocked(); err != nil {
+		return nil, err
+	}
 
-	return err
+	return v.forgetLocked, nil
+}
+
+func (v *Vault) forgetLocked() {
+	clear(v.dataKey)
+
+	v.dataKey = nil
 }
 
 // Lock forgets the data key.
@@ -229,9 +240,7 @@ func (v *Vault) Lock() {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 
-	clear(v.dataKey)
-
-	v.dataKey = nil
+	v.forgetLocked()
 }
 
 // Set encrypts value under key and saves the vault.
@@ -239,9 +248,12 @@ func (v *Vault) Set(key string, value []byte) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 
-	if err := v.readyLocked(); err != nil {
+	done, err := v.readyLocked()
+	if err != nil {
 		return err
 	}
+
+	defer done()
 
 	sealed, err := crypt.Seal(v.dataKey, value, key)
 	if err != nil {
@@ -260,9 +272,12 @@ func (v *Vault) Get(key string) ([]byte, error) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 
-	if err := v.readyLocked(); err != nil {
+	done, err := v.readyLocked()
+	if err != nil {
 		return nil, err
 	}
+
+	defer done()
 
 	sealed, ok := v.file.Items[key]
 	if !ok {

@@ -570,3 +570,24 @@ func TestKeychainFailureLeavesTheVaultAlone(t *testing.T) {
 		t.Error("setup finished without the Keychain")
 	}
 }
+
+func TestWritesWhileLockedKeepNoKey(t *testing.T) {
+	v, _ := newTestVault(t, ModeSystem)
+	v.Lock()
+
+	mustSet(t, v, "key.A", testKey)
+
+	if !v.Locked() {
+		t.Error("a write left the data key in memory")
+	}
+
+	wantValue(t, v, "key.A", testKey)
+
+	if !v.Locked() {
+		t.Error("a read left the data key in memory")
+	}
+
+	if _, err := v.Load(); err != nil || v.Locked() {
+		t.Errorf("load: %v, locked %v", err, v.Locked())
+	}
+}
