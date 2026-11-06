@@ -99,6 +99,10 @@ type App struct {
 	// autoLock is nil when there is nowhere to keep the choice.
 	autoLock *autolock.AutoLock
 
+	// copied is the last secret put on the clipboard, through copiedTo.
+	copied   string
+	copiedTo ui.Services
+
 	// notice waits for the next frame: a Context ignores calls made between
 	// frames, which is when auth answers.
 	notice string
@@ -148,10 +152,11 @@ func (a *App) authorized(reason string, then func()) {
 	})
 }
 
-// Lock takes keys off the screen and forgets the data key.
+// Lock takes keys off the screen and the clipboard, and forgets the data key.
 func (a *App) Lock() {
 	a.unlocked = false
 	a.hide()
+	a.clearCopied()
 
 	// The draft may hold a private key, and a hidden window builds no frame to clear it.
 	a.adding = false

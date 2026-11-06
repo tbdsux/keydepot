@@ -107,6 +107,8 @@ func main() {
 		lock := func() { win.Update(a.Lock) }
 		mygo.Power.OnSuspend(lock)
 		mygo.Power.OnLockScreen(lock)
+		// Before windows close, on the main thread: a key copied just before quitting leaves with it.
+		mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { a.Lock() })
 
 		if idle != nil {
 			idle.Watch(lock)

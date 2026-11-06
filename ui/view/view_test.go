@@ -288,6 +288,10 @@ func TestViewRequiresAuth(t *testing.T) {
 		t.Error("key still shows after locking")
 	}
 
+	if tt.Clipboard() != "" {
+		t.Errorf("clipboard holds %q after locking", tt.Clipboard())
+	}
+
 	if err := tt.Click("Reveal"); err != nil {
 		t.Fatal(err)
 	}

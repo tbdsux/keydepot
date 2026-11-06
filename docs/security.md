@@ -37,7 +37,7 @@ Editing the vault file can't lower the protection. A password-wrapped key in the
 
 - **`keys.json` is unencrypted.** Key names, types, projects and dates are readable by anything that can read your files, so the app can list them while locked. Don't put secrets in a key's name.
 - **Memory:** locking clears the data key, but Go may keep other copies in memory. KeyDepot doesn't defend against memory dumps. Revealed and decrypted keys also pass through memory as ordinary strings.
-- **Clipboard:** other apps can read a copied key during the 60 seconds, clipboard history tools may keep it, and it isn't cleared if KeyDepot quits first.
+- **Clipboard:** other apps can read a copied key until it clears, after 60 seconds or when KeyDepot locks or quits. Clipboard history tools and Universal Clipboard may keep their own copy: MyGo can't mark it as concealed for them.
 - **Tampering by removal:** each item is authenticated on its own, but the vault as a whole isn't. Someone who can write to the file can delete items or restore an older copy without KeyDepot noticing. They still can't read or forge keys.
 - **Password strength:** the minimum is 8 characters, or 12 for exports. Argon2id slows guessing but can't save a weak password.
 - **Other apps and the secret store:** other apps you run may be able to ask for the data key in the modes that keep it there. macOS decides whether to prompt you, and on Linux they may be able to read it without asking.

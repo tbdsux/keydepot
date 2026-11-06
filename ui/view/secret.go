@@ -59,6 +59,7 @@ func (a *App) copy(services ui.Services, e store.Entry) {
 func (a *App) copySecret(services ui.Services, value, message string) {
 	services.WriteClipboard(value)
 
+	a.copied, a.copiedTo = value, services
 	a.notice = fmt.Sprintf("%s. The clipboard clears in %d seconds.", message, int(clipboardLifetime.Seconds()))
 
 	// Leaves the clipboard alone if the user has copied something else since.
@@ -67,4 +68,14 @@ func (a *App) copySecret(services ui.Services, value, message string) {
 			mygo.Clipboard.WriteText("")
 		}
 	})
+}
+
+// clearCopied empties the clipboard if it still holds what KeyDepot copied,
+// so locking or quitting doesn't leave a key there.
+func (a *App) clearCopied() {
+	if a.copied != "" && a.copiedTo.ReadClipboard() == a.copied {
+		a.copiedTo.WriteClipboard("")
+	}
+
+	a.copied, a.copiedTo = "", ui.Services{}
 }
