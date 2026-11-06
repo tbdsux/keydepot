@@ -7,8 +7,9 @@ import (
 )
 
 // ImportKeys only adds: imported keys get new IDs and overwrite nothing. It
-// checks every key before adding any, as the export's contents are untrusted.
-func (s *Store) ImportKeys(index Index, keys map[string]string) (int, error) {
+// checks every key and note before adding any, as the export's contents are
+// untrusted.
+func (s *Store) ImportKeys(index Index, keys, notes map[string]string) (int, error) {
 	for _, e := range index.Keys {
 		if err := CheckKey(e.Name, keys[e.ID]); err != nil {
 			return 0, fmt.Errorf("“%s”: %w", e.Name, err)
@@ -17,6 +18,10 @@ func (s *Store) ImportKeys(index Index, keys map[string]string) (int, error) {
 		if strings.TrimSpace(keys[e.ID]) == "" {
 			return 0, fmt.Errorf("“%s” has no key.", e.Name)
 		}
+
+		if err := CheckNote(notes[e.ID]); err != nil {
+			return 0, fmt.Errorf("“%s”: %w", e.Name, err)
+		}
 	}
 
 	for _, p := range index.Projects {
@@ -24,8 +29,13 @@ func (s *Store) ImportKeys(index Index, keys map[string]string) (int, error) {
 	}
 
 	for i, e := range index.Keys {
-		if _, err := s.Add(e.Name, keys[e.ID], s.importProject(e.Project)); err != nil {
+		added, err := s.Add(e.Name, keys[e.ID], s.importProject(e.Project))
+		if err != nil {
 			return i, err
+		}
+
+		if err := s.SetNote(added.ID, notes[e.ID]); err != nil {
+			return i + 1, fmt.Errorf("“%s” was imported without its note: %w", e.Name, err)
 		}
 	}
 

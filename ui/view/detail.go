@@ -54,6 +54,8 @@ func (a *App) detail(c *ui.Context, e store.Entry) {
 					a.publicKeyCard(c, e)
 				}
 
+				a.noteCard(c, e)
+
 				widget.Card(c, func() {
 					ui.Row(c).Padding(10, 14, 10, 18).AlignItems(ui.Center).Children(func() {
 						ui.Text(c, "Project").TextColor(t.TextMuted).Width(widget.InfoLabelWidth)

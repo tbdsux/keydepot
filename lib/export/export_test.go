@@ -90,7 +90,8 @@ func TestExportRoundTrip(t *testing.T) {
 
 	path := filepath.Join(t.TempDir(), "export.keydepot")
 	keys := map[string]string{a.ID: testKey, b.ID: "other key"}
-	if err := Write(path, exportPass, store.Index{Projects: src.Projects, Keys: src.Entries}, keys); err != nil {
+	notes := map[string]string{a.ID: "Deploys the website"}
+	if err := Write(path, exportPass, store.Index{Projects: src.Projects, Keys: src.Entries}, keys, notes); err != nil {
 		t.Fatal(err)
 	}
 
@@ -99,13 +100,13 @@ func TestExportRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, leak := range []string{"BEGIN", "Deploy", "Work", "Loose"} {
+	for _, leak := range []string{"BEGIN", "Deploy", "Work", "Loose", "website"} {
 		if strings.Contains(string(data), leak) {
 			t.Errorf("export shows %q", leak)
 		}
 	}
 
-	if _, _, err := Read(path, "wrong password"); !errors.Is(err, vault.ErrWrongPassword) {
+	if _, _, _, err := Read(path, "wrong password"); !errors.Is(err, vault.ErrWrongPassword) {
 		t.Errorf("wrong password: %v", err)
 	}
 
@@ -115,12 +116,12 @@ func TestExportRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	index, read, err := Read(path, exportPass)
+	index, read, readNotes, err := Read(path, exportPass)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	n, err := dst.ImportKeys(index, read)
+	n, err := dst.ImportKeys(index, read, readNotes)
 	if err != nil || n != 2 {
 		t.Fatalf("import: %d, %v", n, err)
 	}
@@ -143,8 +144,16 @@ func TestExportRoundTrip(t *testing.T) {
 		t.Errorf("imported key %q", got)
 	}
 
+	if got, _ := dst.Note(dst.Entries[1].ID); got != notes[a.ID] {
+		t.Errorf("imported note %q", got)
+	}
+
+	if got, _ := dst.Note(dst.Entries[2].ID); got != "" {
+		t.Errorf("a key without a note got %q", got)
+	}
+
 	// Importing again only adds, too.
-	if n, err := dst.ImportKeys(index, read); err != nil || n != 2 || len(dst.Entries) != 5 {
+	if n, err := dst.ImportKeys(index, read, readNotes); err != nil || n != 2 || len(dst.Entries) != 5 {
 		t.Errorf("second import: %d, %v, %d entries", n, err, len(dst.Entries))
 	}
 }
@@ -157,14 +166,14 @@ func TestReadExportRefusesUntrustedFiles(t *testing.T) {
 		t.Helper()
 
 		e := store.Entry{ID: "A", Name: "Deploy"}
-		if err := Write(path, exportPass, store.Index{Keys: []store.Entry{e}}, map[string]string{"A": testKey}); err != nil {
+		if err := Write(path, exportPass, store.Index{Keys: []store.Entry{e}}, map[string]string{"A": testKey}, nil); err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	good()
 
-	if _, _, err := Read(path, exportPass); err != nil {
+	if _, _, _, err := Read(path, exportPass); err != nil {
 		t.Fatal(err)
 	}
 
@@ -181,7 +190,7 @@ func TestReadExportRefusesUntrustedFiles(t *testing.T) {
 		good()
 		editFile(t, path, edit)
 
-		if _, _, err := Read(path, exportPass); err == nil {
+		if _, _, _, err := Read(path, exportPass); err == nil {
 			t.Errorf("%s: read", name)
 		}
 	}
@@ -190,7 +199,7 @@ func TestReadExportRefusesUntrustedFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Read(path, exportPass); err == nil || !strings.Contains(err.Error(), "too large") {
+	if _, _, _, err := Read(path, exportPass); err == nil || !strings.Contains(err.Error(), "too large") {
 		t.Errorf("oversized: %v", err)
 	}
 
@@ -205,7 +214,7 @@ func TestReadExportRefusesUntrustedFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, _, err := Read(vaultPath, testPassword); err == nil {
+	if _, _, _, err := Read(vaultPath, testPassword); err == nil {
 		t.Error("read a vault as an export")
 	}
 }

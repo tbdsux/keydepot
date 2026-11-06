@@ -205,9 +205,13 @@ func (s *Store) Get(id string) (string, error) {
 	return string(value), err
 }
 
-// Remove deletes the secret first: a failure then leaves a key the user can
+// Remove deletes the secrets first: a failure then leaves a key the user can
 // still see and retry, never one hidden in the vault.
 func (s *Store) Remove(id string) error {
+	if err := s.secrets.Delete(NoteName(id)); err != nil {
+		return err
+	}
+
 	if err := s.secrets.Delete(SecretName(id)); err != nil {
 		return err
 	}

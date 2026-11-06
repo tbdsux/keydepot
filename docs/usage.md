@@ -38,6 +38,7 @@ These always ask again, even when unlocked: changing the protection, changing th
 - **Add:** paste a private key and give it a name. KeyDepot stores it exactly as pasted, up to 1 MiB, and detects its type from the PEM header: OpenSSH, RSA, EC, PKCS#8, Encrypted PKCS#8 or PGP. Anything else shows as Other.
 - **Reveal or copy:** both need you to be unlocked. Locking hides a revealed key.
 - **Public key:** for SSH keys (OpenSSH, RSA, EC and PKCS#8), **Show** displays the public key and its SHA256 fingerprint, the same one `ssh-keygen -l` shows, and **Copy** copies the line to paste into `authorized_keys` or GitHub. This also needs you to be unlocked, as it reads the private key. The public key isn't secret, so the clipboard keeps it. An OpenSSH key with a passphrase still works, but a PEM key with one doesn't.
+- **Notes:** each key can have notes, such as what it opens or where it's installed. They're encrypted in the vault like the key, so showing and saving them needs you to be unlocked, and exports include them.
 - **Clipboard:** a copied key clears after 60 seconds, unless you've copied something else since. If you quit KeyDepot first, the key stays on the clipboard, and clipboard history tools may keep their own copy.
 - **Update:** rename a key, or paste a rotated key to replace it. Replacing can't be undone.
 - **Delete:** this removes the key from the vault and can't be undone.

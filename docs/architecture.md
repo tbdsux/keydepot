@@ -42,7 +42,7 @@ The app then shows one of three screens:
 Two files hold the data, and each has its own job:
 
 - **`keys.json`** (`store.Store`) lists names, types and projects, unencrypted, so the app can show them while locked.
-- **`vault.keydepot`** (`vault.Vault`) holds the encrypted keys. `store.Secrets` is the interface between them.
+- **`vault.keydepot`** (`vault.Vault`) holds the encrypted keys and their notes. `store.Secrets` is the interface between them.
 
 The vault keeps its data key in memory from unlocking until `Lock`. Its whole file is rewritten on each change. That's why individual keys are capped at 1 MiB.
 

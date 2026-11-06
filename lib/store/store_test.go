@@ -313,7 +313,7 @@ func TestStoreUpdateRestoresKeyWhenIndexCannotSave(t *testing.T) {
 func TestImportChecksEveryKeyBeforeAddingAny(t *testing.T) {
 	s, f := newTestStore(t)
 	index := Index{Keys: []Entry{{ID: "A", Name: "Good"}, {ID: "B", Name: ""}}}
-	if n, err := s.ImportKeys(index, map[string]string{"A": testKey, "B": testKey}); err == nil || n != 0 {
+	if n, err := s.ImportKeys(index, map[string]string{"A": testKey, "B": testKey}, nil); err == nil || n != 0 {
 		t.Fatalf("import: %d, %v", n, err)
 	}
 
@@ -323,11 +323,56 @@ func TestImportChecksEveryKeyBeforeAddingAny(t *testing.T) {
 
 	// A project name the store refuses doesn't lose the key.
 	index = Index{Projects: []string{NoProject}, Keys: []Entry{{ID: "A", Name: "Good", Project: NoProject}}}
-	if _, err := s.ImportKeys(index, map[string]string{"A": testKey}); err != nil {
+	if _, err := s.ImportKeys(index, map[string]string{"A": testKey}, nil); err != nil {
 		t.Fatal(err)
 	}
 
 	if s.Entries[0].Project != "" || len(s.Projects) != 0 {
 		t.Errorf("entries %+v, projects %v", s.Entries, s.Projects)
+	}
+}
+
+func TestNotes(t *testing.T) {
+	s, f := newTestStore(t)
+
+	e, err := s.Add("Deploy", testKey, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if note, err := s.Note(e.ID); err != nil || note != "" {
+		t.Fatalf("new key's note: %q, %v", note, err)
+	}
+
+	if err := s.SetNote(e.ID, "Opens the web server"); err != nil {
+		t.Fatal(err)
+	}
+
+	if note, _ := s.Note(e.ID); note != "Opens the web server" {
+		t.Errorf("note %q", note)
+	}
+
+	if err := s.SetNote(e.ID, strings.Repeat("x", maxNoteSize+1)); err == nil {
+		t.Error("stored an oversized note")
+	}
+
+	if err := s.SetNote(e.ID, ""); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, ok := f[NoteName(e.ID)]; ok {
+		t.Error("an empty note is still stored")
+	}
+
+	if err := s.SetNote(e.ID, "again"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.Remove(e.ID); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(f) != 0 {
+		t.Errorf("removing the key left %v", f)
 	}
 }

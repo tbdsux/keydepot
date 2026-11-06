@@ -47,7 +47,7 @@ Editing the vault file can't lower the protection. A password-wrapped key in the
 
 An export has its own random data key, wrapped by its own password, so it reveals nothing about the vault's key. The key list inside is encrypted too.
 
-Imported files are treated as untrusted. KeyDepot rejects files over 64 MiB and unknown format versions, and limits the Argon2id costs a file can ask for, all before deriving a key. Every key must decrypt before any is returned.
+Imported files are treated as untrusted. KeyDepot rejects files over 64 MiB and unknown format versions, and limits the Argon2id costs a file can ask for, all before deriving a key. Every key and note must decrypt before any is returned.
 
 ## Updates
 
@@ -65,7 +65,7 @@ The vault and exports share one JSON format, written with `0600` permissions on 
   "mode": "password",
   "password": { "salt": "…", "kdf": { "time": 3, "memory": 65536, "threads": 4 }, "sealed": "…" },
   "recovery": { "salt": "…", "kdf": { "time": 3, "memory": 65536, "threads": 4 }, "sealed": "…" },
-  "items": { "key.<id>": "…" }
+  "items": { "key.<id>": "…", "note.<id>": "…" }
 }
 ```
 

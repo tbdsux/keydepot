@@ -17,10 +17,11 @@ const clipboardLifetime = 60 * time.Second
 func (a *App) hide() {
 	a.revealed, a.revealedID = "", ""
 	a.public, a.publicID = pubkey.Key{}, ""
+	a.hideNote()
 }
 
 // shownID is the key whose vault contents are on screen, if any.
-func (a *App) shownID() string { return cmp.Or(a.revealedID, a.publicID) }
+func (a *App) shownID() string { return cmp.Or(a.revealedID, a.publicID, a.noteID) }
 
 func (a *App) toggleReveal(e store.Entry) {
 	if a.revealedID == e.ID {

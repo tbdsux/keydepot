@@ -34,6 +34,8 @@ type App struct {
 	revealedID string
 	public     pubkey.Key
 	publicID   string
+	// noteID is the key whose note is shown; noteSaved is what's in the vault.
+	noteID, noteSaved, noteDraft string
 
 	adding bool
 	// editingID is the key the dialog updates, or empty when it adds one.

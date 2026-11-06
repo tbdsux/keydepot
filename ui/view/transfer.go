@@ -16,6 +16,7 @@ func (a *App) exportKeys() {
 	a.reauth("export your keys", func() {
 		// Read now: an export missing a key must fail, not look complete.
 		keys := make(map[string]string, len(a.store.Entries))
+		notes := map[string]string{}
 
 		for _, e := range a.store.Entries {
 			value, err := a.store.Get(e.ID)
@@ -25,6 +26,16 @@ func (a *App) exportKeys() {
 			}
 
 			keys[e.ID] = value
+
+			note, err := a.store.Note(e.ID)
+			if err != nil {
+				a.notice = fmt.Sprintf("The note on “%s” can't be read, so nothing was exported: %v", e.Name, err)
+				return
+			}
+
+			if note != "" {
+				notes[e.ID] = note
+			}
 		}
 
 		index := store.Index{Projects: a.store.Projects, Keys: a.store.Entries}
@@ -45,7 +56,7 @@ func (a *App) exportKeys() {
 			a.askFor(&passwordAsk{
 				title: "Choose a password for this export", hint: "Only this password opens the file, so keep it apart from the file. Nothing can recover it.",
 				action: "Export", label: "Export password", minLen: minExportPasswordLen,
-				work: func(password string) error { return export.Write(path, password, index, keys) },
+				work: func(password string) error { return export.Write(path, password, index, keys, notes) },
 				then: func() { a.notice = fmt.Sprintf("Exported %d keys.", len(keys)) },
 			})
 		})
@@ -72,17 +83,17 @@ func (a *App) importKeys() {
 
 func (a *App) askImportPassword(path string) {
 	var index store.Index
-	var keys map[string]string
+	var keys, notes map[string]string
 
 	a.askFor(&passwordAsk{
 		title: "Enter the export's password", hint: "Its keys are added to the ones you have.",
 		action: "Import", label: "Export password",
 		work: func(password string) (err error) {
-			index, keys, err = export.Read(path, password)
+			index, keys, notes, err = export.Read(path, password)
 			return err
 		},
 		then: func() {
-			n, err := a.store.ImportKeys(index, keys)
+			n, err := a.store.ImportKeys(index, keys, notes)
 
 			switch {
 			case err != nil && n > 0:
